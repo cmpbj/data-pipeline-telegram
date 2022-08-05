@@ -16,7 +16,17 @@ A primeira etapa do projeto, então, é a criação do **bot** e adcioná-lo ao 
 
 * O Telegram representa a fonte de dados transacionais. As mensagens enviadas por usuários em um grupo serão capturadas pelo bot e redirecionadas via webhook para o AWS API GATEWAY. 
 
-* Ingestão: As requisições HTTP contendo o conteúdo de cada mensagem vai ser recebida pela API GATEWAY e redirecionada para o AWS LAMBDA. Nessa parte, a função criada no LAMBDA vai salvar o conteúdo de cada mensagem em seu formato original (JSON) e armazenar esses arquivos no AWS S3 (*raw*), particionado por dia.
+* Ingestão: As requisições HTTP contendo o conteúdo de cada mensagem vai ser recebida pela API GATEWAY e redirecionada para o AWS LAMBDA (raw.py). Nessa parte, a função criada no LAMBDA vai salvar o conteúdo de cada mensagem em seu formato original (JSON) e armazenar esses arquivos no AWS S3 (*raw*), particionado por dia. Sobre a utilização do AWS API GATEWAY, seguiu-se estes passos:
+
+- Acesse o serviço e selecione: *Create API* -> *REST API*;
+ - Insira um nome, como padrão, um que termine com o sufixo `-api`;
+ - Selecione: *Actions* -> *Create Method* -> *POST*;
+ - Na tela de *setup*: 
+  - Selecione *Integration type* igual a *Lambda Function*;
+  - Habilite o *Use Lambda Proxy integration*;
+  - Busque pelo nome a função do `AWS LAMBDA` (no caso, raw.py).
+  
+Em seguida, é preciso fazer a implantação da API e obter o seu endereço web. Por fim, basta configurar o *webhook* no Telegram para redirecionar as mensagens captadas para a url da AWS API GATEWAY. Isso é realizado através do método `setWebhook`. 
 
 * Wrangling: Uma vez por dia, o gatilho criado no AWS EVENT BRIDGE vai acionar uma outra função do LAMBDA que vai processar as mensagens do dia anterior, denormalizando os dados e salvando o conteúdo no formado Apache Parquet em outro bucket do AWS S3 (*enriched*), também particionado por dia
 
